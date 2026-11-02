@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">SMS → ntfy</string>
+    <string name="mode_label">运行模式</string>
+    <string name="mode_normal">普通模式</string>
+    <string name="mode_lsposed">LSPosed 模式</string>
+    <string name="mode_normal_hint">普通模式：无需 Root。后台写剪贴板在部分国产 ROM 上可能受限，如复制失效请在系统设置中将「写入剪贴板」设为「始终允许」。</string>
+    <string name="mode_lsposed_hint">LSPosed 模式：需 Root + LSPosed，并在管理器中启用本模块（作用域「系统框架」）。启用后后台写剪贴板直接生效、无需授权，并通过 Hook 保活——后台杀不死、被杀自动重启；前台保活（常驻通知）可选。</string>
+    <string name="section_config">ntfy 配置</string>
+    <string name="section_settings">设置</string>
+    <string name="server_hint">地址 (ntfy 服务器，如 https://ntfy.sh)</string>
+    <string name="topic_hint">主题 (topic)</string>
+    <string name="token_hint">访问令牌 (可选)</string>
+    <string name="mtls">mTLS 客户端证书</string>
+    <string name="import_cert">导入证书</string>
+    <string name="save">保存配置</string>
+    <string name="test_send">发送测试</string>
+    <string name="auto_copy">自动复制验证码到剪贴板</string>
+    <string name="keep_alive">前台保活 (常驻通知)</string>
+    <string name="boot_start">开机自启动</string>
+    <string name="guide_settings">建议：若收不到短信、通知或无法自动复制验证码，请到系统「设置 → 应用 → 本应用」中：将电池设为「不受限制」、开启「通知类短信」权限，并将「写入剪贴板」设为「始终允许」（部分厂商 ROM 默认仅前台写入，需手动改为始终允许）</string>
+    <string name="guide_settings_btn">前往应用设置</string>
+    <string name="module_description">SMS → ntfy：后台写剪贴板 + 后台保活（杀不死 / 自动重启）</string>
+</resources>
