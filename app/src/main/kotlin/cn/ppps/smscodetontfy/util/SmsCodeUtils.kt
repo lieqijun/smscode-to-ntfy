@@ -7,8 +7,9 @@ import java.util.regex.Pattern
 
 /**
  * 验证码提取与剪贴板写入。
- * 策略：先按关键词（验证码/code/otp/verification/pin 等）就近匹配 4~8 位数字；
- * 找不到则兜底匹配短信中独立的 4~8 位数字串。
+ * 策略：先按关键词（验证码/code/otp/verification/pin 等）就近匹配 4 位或 6 位数字；
+ * 找不到则兜底匹配短信中独立的 4 位或 6 位数字串。
+ * 仅匹配 4 位 / 6 位验证码，其它长度（如 5 位、7 位、8 位）不视为验证码。
  */
 object SmsCodeUtils {
 
@@ -17,8 +18,8 @@ object SmsCodeUtils {
         "code", "otp", "verification", "pin", "passcode"
     )
 
-    // 前后非数字，长度 4~8 位的数字串
-    private val CODE_PATTERN = Pattern.compile("(?<![0-9])([0-9]{4,8})(?![0-9])")
+    // 前后非数字，长度仅为 4 位或 6 位的数字串（不满足则不视为验证码）
+    private val CODE_PATTERN = Pattern.compile("(?<![0-9])(?:[0-9]{4}(?![0-9])|[0-9]{6}(?![0-9]))")
 
     fun extractSmsCode(text: String?): String? {
         if (text.isNullOrEmpty()) return null

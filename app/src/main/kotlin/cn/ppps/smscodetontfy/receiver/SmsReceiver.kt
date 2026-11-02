@@ -33,25 +33,27 @@ class SmsReceiver : BroadcastReceiver() {
 
         val appCtx = context.applicationContext
         val code = SmsCodeUtils.extractSmsCode(text)
-        val clip = code ?: text
+
+        // 只推送匹配到的 4 位 / 6 位验证码；提取不到（不匹配）则整条不推送
+        if (code.isNullOrEmpty()) return
 
         // 1) 自动复制验证码
         if (AppSettings.autoCopySmsCode) {
             if (AppSettings.mode == Mode.LSPOSED) {
                 // LSPosed 模式：Xposed 已绕过剪贴板后台写限制，直接写即可
-                SmsCodeUtils.copySmsCodeToClipboard(appCtx, clip)
+                SmsCodeUtils.copySmsCodeToClipboard(appCtx, code)
             } else {
                 // 普通模式：优先前台服务写（后台受限 ROM 上更易放行），失败则直接写兜底
-                if (!KeepAliveService.copyToClipboard(appCtx, clip)) {
-                    SmsCodeUtils.copySmsCodeToClipboard(appCtx, clip)
+                if (!KeepAliveService.copyToClipboard(appCtx, code)) {
+                    SmsCodeUtils.copySmsCodeToClipboard(appCtx, code)
                 }
             }
         }
 
-        // 2) 推送到 ntfy：只推验证码，提取不到则整条短信兜底
+        // 2) 推送到 ntfy：仅推送提取到的 4 位 / 6 位验证码
         val cfg = ConfigStore.load(appCtx)
         if (cfg != null && cfg.enabled) {
-            Thread { NtfySender.send(cfg, clip) }.start()
+            Thread { NtfySender.send(cfg, code) }.start()
         }
     }
 }
