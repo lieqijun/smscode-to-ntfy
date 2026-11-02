@@ -1,0 +1,78 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v*
+  workflow_dispatch:
+    inputs:
+      release_title:
+        description: "Release Title"
+        required: true
+        default: "smscode-to-ntfy"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+
+      - name: Checkout Android Keystore
+        uses: actions/checkout@v4
+        with:
+          repository: lieqijun/keystore
+          token: ${{ secrets.TOKEN }}
+          path: keystore
+
+      - name: Fix keystore alias to lieqijun
+        run: |
+          command -v keytool >/dev/null 2>&1 || export PATH="$JAVA_HOME/bin:$PATH"
+          PROPS=keystore/keystore.properties
+          STORE_PASSWORD=$(grep -iE '^storePassword[[:space:]]*=' "$PROPS" | head -1 | cut -d'=' -f2- | tr -d ' \r')
+          KEY_PASSWORD=$(grep -iE '^keyPassword[[:space:]]*=' "$PROPS" | head -1 | cut -d'=' -f2- | tr -d ' \r')
+          # keystore 始终 checkout 到仓库根的 keystore/ 目录，直接在此定位 jks（不依赖 properties 里的相对路径）
+          KEYSTORE=$(ls keystore/*.jks 2>/dev/null | head -1)
+          echo "Keystore: $KEYSTORE"
+          echo "Current keystore entries:"
+          keytool -list -keystore "$KEYSTORE" -storepass "$STORE_PASSWORD" 2>&1 | grep -i "PrivateKeyEntry" || true
+          OLD_ALIAS=$(keytool -list -keystore "$KEYSTORE" -storepass "$STORE_PASSWORD" 2>/dev/null | grep -i "PrivateKeyEntry" | head -1 | cut -d',' -f1 | tr -d ' ')
+          NEW_ALIAS=lieqijun
+          echo "Detected alias: '$OLD_ALIAS'"
+          if [ -n "$OLD_ALIAS" ] && [ "$OLD_ALIAS" != "$NEW_ALIAS" ]; then
+            keytool -changealias -keystore "$KEYSTORE" -alias "$OLD_ALIAS" -destalias "$NEW_ALIAS" -storepass "$STORE_PASSWORD" -keypass "$KEY_PASSWORD" && echo "Alias changed -> $NEW_ALIAS"
+          else
+            echo "Alias already $NEW_ALIAS or not detected, skip"
+          fi
+          # 重写 properties：keyAlias 用新 alias；storeFile 保留 ../ 形式（Gradle 从 app 模块解析到仓库根 keystore/）
+          {
+            echo "keyAlias=$NEW_ALIAS"
+            echo "storeFile=../$KEYSTORE"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > "$PROPS"
+          echo "Rewrote $PROPS with keyAlias=$NEW_ALIAS, storeFile=../$KEYSTORE"
+
+      - name: Build with Gradle
+        run: bash ./gradlew assembleRelease
+
+      - name: Rename APK with version
+        run: |
+          mv app/build/outputs/apk/release/app-release.apk "app/build/outputs/apk/release/smscode-to-ntfy ${{ github.ref_name }}.apk"
+
+      - name: Create Release and Upload APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: smscode-to-ntfy ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            ./app/build/outputs/apk/release/*.apk
