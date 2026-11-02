@@ -1,0 +1,23 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://repo1.maven.org/maven2/' }
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+include ':app'
