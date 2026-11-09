@@ -19,7 +19,8 @@ object SmsCodeUtils {
     )
 
     // 前后非数字，长度仅为 4 位或 6 位的数字串（不满足则不视为验证码）
-    private val CODE_PATTERN = Pattern.compile("(?<![0-9])(?:[0-9]{4}(?![0-9])|[0-9]{6}(?![0-9]))")
+    // 注意：必须使用捕获组 (…)，group(1) 才能取到数字串本身；非捕获组 (?:…) 会导致 group(1) 抛 IndexOutOfBoundsException
+    private val CODE_PATTERN = Pattern.compile("(?<![0-9])([0-9]{4}(?![0-9])|[0-9]{6}(?![0-9]))")
 
     fun extractSmsCode(text: String?): String? {
         if (text.isNullOrEmpty()) return null
