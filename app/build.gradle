@@ -18,8 +18,10 @@ android {
         applicationId "cn.ppps.smscodetontfy"
         minSdkVersion 21
         targetSdkVersion 33
-        versionCode 1
-        versionName "1.0.0"
+        // 版本号由 CI 打 tag 时通过 -PversionName/-PversionCode 传入（release.yml 解析 vX.Y.Z）；
+        // 本地直接构建未传参时回退默认值，避免报错。
+        versionCode (project.findProperty("versionCode") ?: "1").toString().toInteger()
+        versionName (project.findProperty("versionName") ?: "1.0.0").toString()
     }
 
     signingConfigs {
