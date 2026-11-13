@@ -32,6 +32,7 @@ class SmsReceiver : BroadcastReceiver() {
         if (text.isEmpty()) return
 
         val appCtx = context.applicationContext
+        // 未命中验证码关键词（营销/通知类短信）或提取不到 4/6 位验证码时返回 null
         val code = SmsCodeUtils.extractSmsCode(text)
 
         // 只推送匹配到的 4 位 / 6 位验证码；提取不到（不匹配）则整条不推送
